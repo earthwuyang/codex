@@ -589,11 +589,12 @@ Only output the JSON, no explanation."#;
         let tools = self.build_tools_for_agent(agent_def);
 
         let prompt = Prompt {
-            input: input_items,
+            input: _input_items,
             tools,
             parallel_tool_calls: false,
             base_instructions_override: None, // Responses API検証を回避するためNoneに設定
             output_schema: None,
+        };
         };
 
         // デバッグ: システムプロンプトの内容をログ出力
