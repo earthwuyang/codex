@@ -546,28 +546,8 @@ Only output the JSON, no explanation."#;
     ) -> Result<Vec<String>> {
         debug!("Executing agent '{}' with goal: {}", agent_def.name, goal);
 
-        // 1. システムプロンプト構築
-        let system_prompt = format!(
-            "You are a specialized sub-agent with the following role:\n\
-             \n\
-             Agent: {}\n\
-             Goal: {}\n\
-             \n\
-             Success Criteria:\n{}\n\
-             \n\
-             Inputs provided:\n{}\n\
-             \n\
-             Please analyze the task and execute it according to your role.\
-             Generate the required artifacts as specified.",
-            agent_def.name,
-            agent_def.goal,
-            agent_def.success_criteria.join("\n- "),
-            inputs
-                .iter()
-                .map(|(k, v)| format!("- {}: {}", k, v))
-                .collect::<Vec<_>>()
-                .join("\n")
-        );
+        // 1. システムプロンプト構築（シンプル版）
+        let system_prompt = format!("You are a {} agent. {}", agent_def.name, agent_def.goal);
 
         // 2. ユーザー入力を構築
         let user_message = format!("Task: {goal}\n\nPlease proceed with the execution.");
@@ -600,6 +580,14 @@ Only output the JSON, no explanation."#;
             base_instructions_override: Some(system_prompt.clone()),
             output_schema: None,
         };
+
+        // デバッグ: システムプロンプトの内容をログ出力
+        debug!(
+            "System prompt for agent '{}' ({} chars):\n{}",
+            agent_def.name,
+            system_prompt.len(),
+            system_prompt
+        );
 
         // 6. LLM呼び出し
         let mut stream = client.stream(&prompt).await?;
@@ -1271,7 +1259,8 @@ impl AgentRuntime {
 #[cfg(test)]
 mod mcp_tests {
     use super::*;
-
+    use pretty_assertions::assert_eq;
+}
     #[tokio::test]
     async fn test_filter_codex_mcp_tools() {
         use crate::agents::types::ContextPolicy;
@@ -1282,6 +1271,7 @@ mod mcp_tests {
         let agent_def = AgentDefinition {
             name: "test-agent".to_string(),
             goal: "Test".to_string(),
+            instructions: None,
             tools: ToolPermissions {
                 mcp: vec![
                     "codex_read_file".to_string(),
@@ -1307,7 +1297,7 @@ mod mcp_tests {
         };
 
         let temp_dir = tempfile::tempdir().unwrap();
-        let config = Arc::new(Config::default());
+        let config = std::sync::Arc::new(Config::default());
         let provider = ModelProviderInfo {
             name: "Test".to_string(),
             base_url: Some("https://api.openai.com/v1".to_string()),
@@ -1357,7 +1347,7 @@ mod mcp_tests {
         use uuid::Uuid;
 
         let temp_dir = tempfile::tempdir().unwrap();
-        let config = Arc::new(Config::default());
+        let config = std::sync::Arc::new(Config::default());
         let provider = ModelProviderInfo {
             name: "Test".to_string(),
             base_url: Some("https://api.openai.com/v1".to_string()),
@@ -1400,4 +1390,3 @@ mod mcp_tests {
         assert!(desc.contains("codex_grep"));
         assert!(desc.contains("Safe, read-only operation"));
     }
-}

@@ -99,3 +99,128 @@ rmcp-*/
 # Keep main project Cargo.lock for reproducible builds
 # but exclude dependency Cargo.lock files
 rmcp-*/Cargo.lock
+
+# ========================================
+# zapabob/codex 独自ファイル（本家との差分を最小化）
+# ========================================
+
+# 実装ログ・ドキュメント
+_docs/
+.specstory/
+
+# ビルド・インストールスクリプト
+build-*.ps1
+build-*.sh
+build-*.log
+build.log
+install-*.ps1
+install-*.log
+auto-*.ps1
+auto-*.py
+clean-*.ps1
+clean-*.log
+monitor-*.ps1
+wait-*.ps1
+check-*.ps1
+fast-*.ps1
+global-*.ps1
+emergency-*.ps1
+
+# テストスクリプト・結果
+test-*.ps1
+test-*.log
+test-*.json
+test_*.ps1
+test_*.py
+test_*.json
+test_*.md
+final_integration_test.py
+
+# セットアップ・管理スクリプト
+setup-*.ps1
+commit-*.ps1
+merge-*.ps1
+apply-*.ps1
+copy-*.ps1
+update-version.ps1
+
+# デバッグファイル
+_debug_*.html
+_debug_*.py
+debug_*.py
+debug_*.html
+
+# 成果物
+artifacts/
+
+# 一時ファイル・バックアップ
+temp-old-implementation/
+*-old-implementation/
+
+# 独自ドキュメント（zapabob特有）
+BUILD_OPTIMIZATION.md
+CI_CD_SETUP_GUIDE.md
+CODEX_FIX_PROMPT.md
+COMPLETE_PR_SETUP.md
+CURSOR_IDE_SETUP.md
+CURSOR_INTEGRATION.md
+CURSOR_MCP_SETUP.md
+FINAL_COMPLETION_SUMMARY.md
+FINAL_INSTRUCTIONS.md
+INSTALL_SUBAGENTS.md
+MCP_CONFIGURATION_GUIDE.md
+MCP_TEST_GUIDE.md
+META_PROMPT_FOR_GPT5.md
+OPENAI_PR_GUIDE.md
+OPENAI_PR_差異まとめ.md
+PARALLEL_CUSTOM_AGENT_GUIDE.md
+PNPM.md
+PROJECT_COMPLETE_FINAL_SUMMARY.md
+PROJECT_COMPLETE_SUMMARY.md
+PR作成手順_OpenAI.md
+PR作成手順_簡潔版.txt
+PULL_REQUEST_OPENAI_COMPLETE.md
+PULL_REQUEST_OPENAI.md
+PULL_REQUEST.md
+QUICKSTART_DEEPRESEARCH.md
+SEMANTIC_VERSIONING.md
+SNS_POST_EN.md
+SNS投稿文_LinkedIn_X.md
+SUBAGENT_QUICKSTART.md
+SUBAGENTS_QUICKSTART.md
+
+# docs/内の独自実装計画書（zapabob特有）
+docs/codex-subagents-deep-research-implementation-plan.md
+docs/cursor-implementation-plan.md
+docs/implementation-roadmap*.md
+
+# パッチファイル
+*.patch
+
+# その他の一時ファイル
+VERSION
+CUsersdownl.codexbin
+tatus
+urf拡張完成
+h origin main
+git cmmit-*
+
+# codex-rs独自ファイル
+codex-rs/BUILD_AND_INSTALL_GUIDE.md
+codex-rs/clean-build-install.ps1
+codex-rs/emergency-repair.ps1
+codex-rs/*.log
+
+# VSCode/Windsurf拡張開発（独自）
+vscode-extension/
+windsurf-extension/
+
+# SDK（独自開発）
+sdk/
+
+# rmcp バージョンディレクトリ（ローカルビルド用）
+rmcp-0.*/
+
+# その他
+.claude/
+CLAUDE.md

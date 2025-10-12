@@ -9,6 +9,9 @@ pub struct AgentDefinition {
     pub name: String,
     /// エージェントの目標
     pub goal: String,
+    /// 詳細なインストラクション（LLMに渡されるシステムプロンプトの一部）
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub instructions: Option<String>,
     /// ツール権限
     pub tools: ToolPermissions,
     /// ポリシー設定

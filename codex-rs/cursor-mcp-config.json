@@ -4,7 +4,8 @@
       "command": "codex-mcp-server",
       "args": [],
       "env": {},
-      "description": "Codex Multi-Agent System - Code Review, Deep Research, Supervisor"
+      "description": "Codex Multi-Agent System with Deep Research"
     }
   }
 }
+

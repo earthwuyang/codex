@@ -1,0 +1,14 @@
+# Codex Configuration
+# サブエージェント用の設定
+
+# モデル設定
+model = "gpt-5-codex"
+
+# OpenAI Provider設定を上書き
+# デフォルトのResponses APIの代わりにChat Completions APIを使用
+[model_providers.openai]
+base_url = "https://api.openai.com/v1"
+env_key = "OPENAI_API_KEY"
+name = "OpenAI (Chat Completions API)"
+requires_openai_auth = true
+wire_api = "chat"

@@ -110,6 +110,12 @@
 - Provide migration guides for existing users: default configuration yields current single-agent behavior until explicit agent definitions are added.
 - Document sandbox expectations (environment variables, seatbelt behavior) to ensure delegated agents and Deep Research tasks short-circuit gracefully when capabilities are unavailable.
 
+## Implementation Roadmap（概要）
+
+- 詳細な工程と出口基準は `docs/codex-subagents-deep-research-implementation-plan.md` に整理。サブエージェント Runtime / Budgeter / Policy Guard / Deep Research Engine / MCP 連携 / 各サーフェス統合 / 観測性の各ワークストリームについて、deliverable・依存関係・KPI を明記している。
+- フェーズ構成は M0 (Foundation Intake) → M1 (Sub-Agent MVP) → M2 (Deep Research v1) → M3 (統合 & ガバナンス) → M4 (GA)。Feature Flag と zapabob 先行導入 → upstream 同期という段階的ロールアウトを採用する。
+- 非機能要件（サンドボックス権限ガード、トークン Budgeter/軽量 DR、出典と監査ログ、観測性）は計画書に出口基準・KPI として組み込まれており、本要件書と整合している。
+
 ## Open Questions
 
 - Token arbitration: should Codex support bidding between agents or centrally allocate quotas?

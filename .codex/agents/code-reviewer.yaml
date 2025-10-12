@@ -1,5 +1,5 @@
 name: "code-reviewer"
-goal: "Comprehensive code review with security, performance, and best practices analysis"
+goal: "Analyze code for type safety, security vulnerabilities, performance optimizations, and best practices. Generate a detailed markdown report."
 tools:
   mcp:
     - grep
