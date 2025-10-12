@@ -747,12 +747,11 @@ Only output the JSON, no explanation."#;
                     tools.push(create_list_dir_tool());
                     debug!("Added list_dir tool for agent '{}'", agent_def.name);
                 }
-                "codebase_search" => {
-                    use crate::tools::spec::create_codebase_search_tool;
-                    tools.push(create_codebase_search_tool());
-                    debug!("Added codebase_search tool for agent '{}'", agent_def.name);
-                }
-                }
+                // "codebase_search" => {
+                //     use crate::tools::spec::create_codebase_search_tool;
+                //     tools.push(create_codebase_search_tool());
+                //     debug!("Added codebase_search tool for agent '{}'", agent_def.name);
+                // }
                 _ => {
                     debug!("Unknown tool in agent definition: {}", tool_name);
                 }
