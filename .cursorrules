@@ -63,10 +63,10 @@ codex agent-create "Find all TODO comments and create summary"
 
 | Task Type | Model | Reasoning |
 |-----------|-------|-----------|
-| Quick fixes | `gpt-4o-mini` | Fast, cost-effective |
-| Standard development | `gpt-4o` | Balanced performance |
-| Complex refactoring | `gpt-4o` | Strong code understanding |
-| Algorithm design | `o1-preview` | Superior reasoning |
+| Quick fixes | `gpt-5-codex-medium` | Fast, cost-effective |
+| Standard development | `gpt-5-codex-medium` | Balanced performance |
+| Complex refactoring | `gpt-5-codex-medium` | Strong code understanding |
+| Algorithm design | `gpt-5-codex-high` | Superior reasoning |
 
 ```bash
 codex --model gpt-4o-mini "Rename variable foo to bar"
