@@ -16,10 +16,11 @@ cargo clean
 Write-Host "  Clean completed" -ForegroundColor Green
 Write-Host ""
 
-# Step 3: Release build
-Write-Host "[Step 3/4] Release build (this will take 10-15 minutes)..." -ForegroundColor Yellow
+# Step 3: Release build (with stability options)
+Write-Host "[Step 3/4] Release build with stability options (single-threaded, no incremental)..." -ForegroundColor Yellow
+Write-Host "  This will take 15-20 minutes but is more stable..." -ForegroundColor Gray
 $buildStart = Get-Date
-cargo build --release -p codex-cli
+cargo build --release -p codex-cli -j 1
 $buildEnd = Get-Date
 $buildDuration = ($buildEnd - $buildStart).TotalMinutes
 
