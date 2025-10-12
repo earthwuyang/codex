@@ -5,7 +5,8 @@
 
 # ==================== Core Settings ====================
 # Model: Default model (override with --model flag)
-model = "gpt-4o"  # OpenAI recommended default
+model = "gpt-5-codex"  # Latest Codex model (2025)
+# Alternative: "gpt-5-codex-medium", "gpt-4o", "gpt-4o-mini", "o1-preview", "o1-mini"
 model_reasoning_summary = "detailed"
 windows_wsl_setup_acknowledged = true
 

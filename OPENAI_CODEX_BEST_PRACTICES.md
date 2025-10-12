@@ -13,19 +13,21 @@
 #### Recommended Approach
 ```bash
 # Always specify model explicitly via CLI
-codex --model gpt-4o "task description"
+codex --model gpt-5-codex "task description"
 
 # Use appropriate model for task complexity
-codex --model gpt-4o-mini "simple refactoring"     # Fast, cost-effective
-codex --model gpt-4o "complex implementation"      # Balanced performance
-codex --model o1-preview "algorithmic challenges"  # Reasoning-intensive
+codex --model gpt-4o-mini "simple refactoring"        # Fast, cost-effective
+codex --model gpt-5-codex "complex implementation"    # Latest Codex (2025)
+codex --model gpt-5-codex-medium "balanced tasks"     # Medium variant
+codex --model o1-preview "algorithmic challenges"     # Reasoning-intensive
 ```
 
 #### Configuration File
 ```toml
 # ~/.codex/config.toml
 # Best Practice: Provide sensible default, allow CLI override
-model = "gpt-4o"  # Default: Latest stable model
+model = "gpt-5-codex"  # Default: Latest Codex model (2025)
+# Alternative: "gpt-5-codex-medium", "gpt-4o", "gpt-4o-mini", "o1-preview"
 ```
 
 **Rationale**: 
@@ -236,7 +238,8 @@ format = "json"  # json or yaml
 
 # ==================== Core Settings ====================
 # Model: Default model (override with --model flag)
-model = "gpt-4o"
+model = "gpt-5-codex"  # Latest Codex model (2025)
+# Alternative: "gpt-5-codex-medium", "gpt-4o", "gpt-4o-mini", "o1-preview"
 model_reasoning_summary = "detailed"
 windows_wsl_setup_acknowledged = true
 
@@ -318,8 +321,11 @@ trust_level = "trusted"
 # Quick refactoring (use fast model)
 codex --model gpt-4o-mini "Rename variable foo to bar across files"
 
-# Complex feature (use powerful model)
-codex --model gpt-4o "Implement authentication with JWT and refresh tokens"
+# Complex feature (use latest Codex)
+codex --model gpt-5-codex "Implement authentication with JWT and refresh tokens"
+
+# Balanced tasks (use medium variant)
+codex --model gpt-5-codex-medium "Refactor module with moderate complexity"
 
 # Algorithmic challenge (use reasoning model)
 codex --model o1-preview "Optimize this sorting algorithm for large datasets"
@@ -331,10 +337,10 @@ codex --model o1-preview "Optimize this sorting algorithm for large datasets"
 
 ```bash
 # Parallel code review and testing
-codex --model gpt-4o "Use codex-supervisor to review security and generate tests in parallel"
+codex --model gpt-5-codex "Use codex-supervisor to review security and generate tests in parallel"
 
 # Deep research before implementation
-codex --model gpt-4o "Research React Server Components best practices, then implement a example"
+codex --model gpt-5-codex "Research React Server Components best practices, then implement a example"
 ```
 
 ---
@@ -443,11 +449,12 @@ token_budget = 10000
 | Task Type | Recommended Model | Reasoning |
 |-----------|-------------------|-----------|
 | Quick fixes | `gpt-4o-mini` | Fast, cost-effective |
-| Standard development | `gpt-4o` | Balanced performance |
-| Complex refactoring | `gpt-4o` | Strong code understanding |
+| Standard development | `gpt-5-codex` | Latest Codex (2025) |
+| Complex refactoring | `gpt-5-codex` | Strong code understanding |
 | Algorithm design | `o1-preview` | Superior reasoning |
 | Documentation | `gpt-4o-mini` | Sufficient for text |
-| Code review | `gpt-4o` | Detailed analysis |
+| Code review | `gpt-5-codex` | Detailed code analysis |
+| Balanced tasks | `gpt-5-codex-medium` | Medium variant |
 
 ---
 
