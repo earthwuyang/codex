@@ -577,7 +577,7 @@ Only output the JSON, no explanation."#;
         );
 
         // 4. ResponseItem構築（Promptに渡す）
-        let input_items = vec![ResponseItem::Message {
+        let _input_items = vec![ResponseItem::Message {
             id: None,
             role: "user".to_string(),
             content: vec![ContentItem::InputText {
