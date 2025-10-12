@@ -595,7 +595,6 @@ Only output the JSON, no explanation."#;
             base_instructions_override: None, // Responses API検証を回避するためNoneに設定
             output_schema: None,
         };
-        };
 
         // デバッグ: システムプロンプトの内容をログ出力
         debug!(

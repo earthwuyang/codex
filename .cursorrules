@@ -69,9 +69,9 @@ codex agent-create "Find all TODO comments and create summary"
 | Algorithm design | `gpt-5-codex-high` | Superior reasoning |
 
 ```bash
-codex --model gpt-4o-mini "Rename variable foo to bar"
-codex --model gpt-4o "Implement JWT authentication"
-codex --model o1-preview "Optimize sorting algorithm"
+codex --model gpt-5-codex-medium "Rename variable foo to bar"
+codex --model gpt-5-codex-medium "Implement JWT authentication"
+codex --model gpt-5-codex_high "Optimize sorting algorithm"
 ```
 
 ---
