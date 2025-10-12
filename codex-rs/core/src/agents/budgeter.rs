@@ -31,7 +31,10 @@ impl TokenBudgeter {
 
     /// エージェントの予算上限を設定
     pub fn set_agent_limit(&self, agent_name: &str, limit: usize) -> Result<()> {
-        let mut limits = self.agent_limits.lock().unwrap();
+        let mut limits = self
+            .agent_limits
+            .lock()
+            .map_err(|e| anyhow::anyhow!("Mutex lock poisoned: {e}"))?;
         limits.insert(agent_name.to_string(), limit);
         debug!("Set token limit for agent '{}': {}", agent_name, limit);
         Ok(())
