@@ -12,3 +12,35 @@ env_key = "OPENAI_API_KEY"
 name = "OpenAI (Chat Completions API)"
 requires_openai_auth = true
 wire_api = "chat"
+
+# ==================== セキュリティ ====================
+[sandbox]
+default_mode = "read-only"
+
+[approval]
+policy = "on-request"
+
+# ==================== MCP サーバー ====================
+# Codex 自身を MCP サーバーとして使用
+[mcp_servers.codex-agent]
+args = ["mcp-server"]
+command = "codex"
+env.CODEX_CONFIG_PATH = "~/.codex/config.toml"
+env.RUST_LOG = "info"
+
+# ==================== サブエージェント ====================
+[subagents]
+enabled = true
+inherit_model = true
+max_parallel = 4
+token_budget = 40000
+# 🆕 MCP 経由で Codex ツールを使用
+use_codex_mcp = true
+
+# ==================== 監査ログ ====================
+[audit]
+enabled = true
+format = "json"
+include_mcp_calls = true
+include_tool_args = true
+log_dir = "~/.codex/audit-logs"
