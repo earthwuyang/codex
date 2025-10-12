@@ -106,7 +106,7 @@ rmcp-*/Cargo.lock
 
 # 実装ログ・ドキュメント
 _docs/
-.specstory/
+# .specstory/ ← エージェントとのログを残すためコメントアウト
 
 # ビルド・インストールスクリプト
 build-*.ps1
