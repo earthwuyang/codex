@@ -8,23 +8,6 @@
 
 ---
 
-## 🚨 Critical Security Notice
-
-⚠️ **Remote Code Execution Vulnerability** ([#5121](https://github.com/openai/codex/issues/5121))
-
-**ALWAYS**:
-- ✅ Use sandbox mode (`--sandbox=read-only` or `workspace-write`)
-- ✅ Set approval policy to `on-request` for untrusted code
-- ✅ Review all generated shell commands before execution
-- ✅ Never use `--approval never` with `--sandbox=danger-full-access`
-
-```bash
-# Safe execution
-codex --sandbox=read-only --ask-for-approval on-request "task"
-```
-
----
-
 ## 📋 Quick Reference
 
 ### OpenAI Official CLI Commands
@@ -55,6 +38,23 @@ codex research "React Server Components best practices" --depth 3
 
 # Custom agent creation
 codex agent-create "Find all TODO comments and create summary"
+```
+
+---
+
+## 🚨 Critical Security Notice
+
+⚠️ **Remote Code Execution Vulnerability** ([#5121](https://github.com/openai/codex/issues/5121))
+
+**ALWAYS**:
+- ✅ Use sandbox mode (`--sandbox=read-only` or `workspace-write`)
+- ✅ Set approval policy to `on-request` for untrusted code
+- ✅ Review all generated shell commands before execution
+- ✅ Never use `--approval never` with `--sandbox=danger-full-access`
+
+```bash
+# Safe execution
+codex --sandbox=read-only --ask-for-approval on-request "task"
 ```
 
 ---
@@ -498,7 +498,7 @@ codex-main/
 ├── .cursor/           # Cursor IDE configuration
 │   └── rules.md       # Complete project rules
 ├── _docs/             # Implementation logs
-└── .cursorrules       # This file (quick reference)
+└── .cursorrules       # Quick reference (Cursor IDE)
 ```
 
 ---
@@ -513,3 +513,4 @@ codex-main/
 - [Full Rules](.cursor/rules.md)
 - [OpenAI Official](https://github.com/openai/codex)
 - [Security Issue #5121](https://github.com/openai/codex/issues/5121)
+

@@ -18,6 +18,8 @@
 8. [Build & Development](#️-build--development)
 9. [Testing Requirements](#-testing-requirements)
 10. [Documentation](#-documentation)
+11. [Known Issues & Workarounds](#-known-issues--workarounds)
+12. [Security Considerations](#-security-considerations)
 
 ---
 
@@ -144,7 +146,24 @@ policy = "on-request"        # Ask before executing
 | `workspace-write` | Write within workspace | Development, refactoring |
 | `danger-full-access` | Full system access | ⚠️ Automated scripts (explicit only) |
 
-### Usage
+### CLI Usage (OpenAI Official)
+
+Based on [OpenAI/codex CLI usage documentation](https://github.com/openai/codex/blob/main/docs/getting-started.md#cli-usage):
+
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `codex` | Interactive TUI | `codex` |
+| `codex "..."` | Initial prompt for interactive TUI | `codex "fix lint errors"` |
+| `codex exec "..."` | Non-interactive "automation mode" | `codex exec "explain utils.ts"` |
+
+**Key flags**: `--model/-m`, `--ask-for-approval/-a`
+
+**Resuming interactive sessions**:
+- Run `codex resume` to display the session picker UI
+- Resume most recent: `codex resume --last`
+- Resume by id: `codex resume <SESSION_ID>` (session IDs from `~/.codex/sessions/` or `codex status`)
+
+### Sandbox Usage Examples
 
 ```bash
 # Safe analysis (default)
@@ -656,26 +675,37 @@ pub async fn execute_agent(
 
 ## 🚀 Quick Reference
 
-### Common Commands
+### Common Commands (Official + Extended)
 
 ```bash
+# === OpenAI Official Commands ===
+
+# Interactive mode with prompt
+codex "implement user authentication"
+
+# Automation mode (non-interactive)
+codex exec "add type hints to all functions"
+
+# Resume last session
+codex resume --last
+
+# Check status
+codex status
+codex login status
+
+# === zapabob Extended Commands ===
+
 # Code review
 codex delegate code-reviewer --scope ./src
 
-# Parallel execution
+# Parallel execution (3x faster)
 codex delegate-parallel code-reviewer,test-gen --scopes ./src,./tests
 
-# Deep research
-codex research "Topic" --depth 3
+# Deep research with citations
+codex research "React Server Components best practices" --depth 3
 
-# Custom agent
-codex agent-create "Task description"
-
-# Resume session
-codex resume
-
-# Check status
-codex login status
+# Custom agent creation
+codex agent-create "Find all TODO comments and create summary"
 ```
 
 ### File Paths
@@ -773,8 +803,261 @@ token_budget = 40000
 
 ---
 
+## 🐛 Known Issues & Workarounds
+
+Based on [OpenAI/codex Issues](https://github.com/openai/codex/issues) (as of 2025-10-12):
+
+### Security Issues
+
+#### Remote Code Execution Vulnerabilities ([#5121](https://github.com/openai/codex/issues/5121))
+
+**Issue**: Potential RCE vulnerabilities in CodeX  
+**Severity**: 🔴 Critical
+
+**Workarounds**:
+- ✅ Always use sandbox mode (`read-only` or `workspace-write`)
+- ✅ Set approval policy to `on-request` for untrusted code
+- ✅ Review all generated shell commands before execution
+- ✅ Use `--ask-for-approval` flag in automation
+
+```bash
+# Safe execution
+codex --sandbox=read-only --ask-for-approval on-request "task"
+```
+
+### IDE Integration Issues
+
+#### VS Code Extension: Slash Commands Not Working ([#5114](https://github.com/openai/codex/issues/5114))
+
+**Issue**: Unable to use slash commands in VS Code extension  
+**Status**: 🟡 Open
+
+**Workaround**: Use CLI instead of extension for slash commands
+
+```bash
+# Instead of /review in VS Code
+codex exec "/review src/main.ts"
+```
+
+#### Japanese Environment: /review Ignores Language Settings ([#5113](https://github.com/openai/codex/issues/5113))
+
+**Issue**: `/review` command ignores language settings and AGENTS.md in Japanese environment  
+**Status**: 🟡 Open
+
+**Workaround**: Explicitly specify language in prompt
+
+```bash
+codex "Review this code in Japanese: [code]"
+# Or use AGENTS.md with explicit language directive
+```
+
+### Model Behavior Issues
+
+#### Model Gives Up Early ([#5117](https://github.com/openai/codex/issues/5117))
+
+**Issue**: Codex Web model terminates tasks prematurely  
+**Status**: 🟡 Open
+
+**Workarounds**:
+- ✅ Break tasks into smaller chunks
+- ✅ Use explicit continuation prompts
+- ✅ Increase token budget for sub-agents
+
+```bash
+# Split large tasks
+codex "Step 1: Setup authentication"
+codex resume --last  # Then continue
+codex "Step 2: Implement JWT validation"
+```
+
+#### Model Changes API Style Unexpectedly ([#5103](https://github.com/openai/codex/issues/5103))
+
+**Issue**: Model changes existing API style when adding to it, despite being told not to  
+**Status**: 🟡 Open
+
+**Workarounds**:
+- ✅ Provide explicit style examples
+- ✅ Use `--model gpt-4o` (better instruction following)
+- ✅ Review diffs carefully before accepting
+
+### CLI Issues
+
+#### macOS Terminal: OSC Palette Reply Pre-fills Prompt ([#5107](https://github.com/openai/codex/issues/5107))
+
+**Issue**: Codex CLI pre-fills prompt with OSC palette reply on macOS Terminal  
+**Status**: 🟡 Open
+
+**Workaround**: Use iTerm2 or update Terminal.app preferences
+
+#### Argv Structure Complicates Approvals ([#5112](https://github.com/openai/codex/issues/5112))
+
+**Issue**: Default guidance for structuring argv complicates approval flow  
+**Status**: 🟡 Open
+
+**Workaround**: Simplify commands with explicit flags
+
+```bash
+# Instead of complex argv
+codex --model gpt-4o --sandbox workspace-write "simple task"
+```
+
+### Feature Requests (In Progress)
+
+#### MCP Integration for Codex Web ([#5120](https://github.com/openai/codex/issues/5120))
+
+**Status**: 🔵 Enhancement  
+**ETA**: TBD
+
+**Current Alternative**: Use Codex CLI with MCP servers
+
+```toml
+# ~/.codex/config.toml
+[mcp_servers.codex-agent]
+command = "codex"
+args = ["mcp-server"]
+```
+
+#### Chat While Coding ([#5119](https://github.com/openai/codex/issues/5119))
+
+**Status**: 🔵 Enhancement  
+**ETA**: TBD
+
+**Current Alternative**: Use `codex resume` to continue conversation
+
+#### Working Directory in Resume Search ([#5110](https://github.com/openai/codex/issues/5110))
+
+**Status**: 🔵 Enhancement  
+**ETA**: TBD
+
+**Current Workaround**: Manually track session IDs per project
+
+```bash
+# Track sessions manually
+echo "PROJECT_SESSION_ID" > .codex-session
+codex resume $(cat .codex-session)
+```
+
+---
+
+## 🔒 Security Considerations
+
+### Critical Security Practices (Based on [#5121](https://github.com/openai/codex/issues/5121))
+
+#### 1. Never Run Untrusted Code Without Review
+
+```bash
+# ❌ DANGEROUS: Auto-approve unknown code
+codex --approval never "download and execute script from internet"
+
+# ✅ SAFE: Review before execution
+codex --approval on-request "download and execute script from internet"
+```
+
+#### 2. Sandbox All File Operations
+
+```toml
+# ~/.codex/config.toml
+[sandbox]
+default_mode = "read-only"  # CRITICAL: Never default to full access
+
+[sandbox_permissions]
+workspace_write = true       # Limit to workspace only
+disk_full_read_access = false  # NO full disk access
+network_access = false       # NO network by default
+```
+
+#### 3. Audit All Generated Commands
+
+**Especially for**:
+- Shell commands with `sudo`
+- File deletion operations
+- Network requests
+- Database modifications
+
+```bash
+# Enable audit logging
+[audit]
+enabled = true
+log_dir = "~/.codex/audit-logs"
+include_command_output = true
+```
+
+#### 4. API Key Management
+
+```bash
+# ✅ CORRECT: Environment variable
+export OPENAI_API_KEY="sk-..."
+
+# ❌ WRONG: Hardcoded in config
+# api_key = "sk-..."  # NEVER DO THIS!
+```
+
+#### 5. Regular Security Updates
+
+```bash
+# Update Codex regularly
+npm update -g @openai/codex
+
+# For Rust build
+cd codex-rs
+git pull origin main
+cargo build --release -p codex-cli
+cargo install --path cli --force
+```
+
+#### 6. Sub-Agent Isolation
+
+```yaml
+# .codex/agents/code-reviewer.yaml
+sandbox_mode: read-only     # Reviewers should never write
+approval_policy: never      # Auto-approve read-only operations
+
+# .codex/agents/sec-audit.yaml
+sandbox_mode: read-only     # Security audits read-only
+token_budget: 50000         # Limit resource usage
+```
+
+#### 7. Network Isolation for Sensitive Tasks
+
+```bash
+# Disable network for local analysis
+codex --sandbox workspace-write --no-network "analyze sensitive code"
+```
+
+#### 8. Code Review All AI-Generated Changes
+
+**Never blindly accept**:
+- Authentication code
+- Cryptographic operations
+- SQL queries
+- File system operations
+- Network requests
+
+**Always verify**:
+- Input validation
+- Error handling
+- Resource cleanup
+- Security best practices
+
+### Security Checklist
+
+Before deploying AI-generated code:
+
+- [ ] Reviewed all file operations
+- [ ] Verified input validation
+- [ ] Checked for SQL injection vectors
+- [ ] Validated authentication logic
+- [ ] Confirmed error handling
+- [ ] Tested edge cases
+- [ ] Ran security linter (cargo-audit, npm audit)
+- [ ] Reviewed audit logs
+- [ ] Verified sandbox was enabled
+- [ ] Confirmed no hardcoded secrets
+
+---
+
 **Version**: 0.47.0-alpha.1  
 **Maintained by**: zapabob  
-**Based on**: OpenAI/codex official recommendations  
+**Based on**: OpenAI/codex official recommendations + community issues  
 **Status**: ✅ Production Ready
 
