@@ -547,7 +547,7 @@ Only output the JSON, no explanation."#;
         debug!("Executing agent '{}' with goal: {}", agent_def.name, goal);
 
         // 1. システムプロンプト構築（シンプル版）
-        let system_prompt = format!("You are a {} agent. {}", agent_def.name, agent_def.goal);
+        let _system_prompt = format!("You are a {} agent. {}", agent_def.name, agent_def.goal);
 
         // 2. ユーザー入力を構築（タスクとinputsを含む）
         let inputs_text = if inputs.is_empty() {
@@ -815,7 +815,15 @@ artifacts:
         fs::write(agents_dir.join("test-agent.yaml"), agent_yaml).unwrap();
 
         // モックConfig作成
-        let config = Arc::new(Config::default());
+        let codex_home = temp_dir.path().to_path_buf();
+        let config = Arc::new(
+            Config::load_from_base_config_with_overrides(
+                crate::config_types::ConfigToml::default(),
+                crate::config_types::ConfigOverrides::default(),
+                codex_home.clone(),
+            )
+            .unwrap(),
+        );
         let provider = ModelProviderInfo {
             name: "Test Provider".to_string(),
             base_url: Some("https://api.openai.com/v1".to_string()),
@@ -830,7 +838,7 @@ artifacts:
             stream_idle_timeout_ms: Some(300_000),
             requires_openai_auth: false,
         };
-        let conversation_id = ConversationId(Uuid::new_v4());
+        let conversation_id = ConversationId::new();
         let otel_manager = OtelEventManager::new(
             conversation_id,
             "test-model",
@@ -887,7 +895,8 @@ artifacts:
         fs::write(agents_dir.join("agent1.yaml"), "name: Agent1\ngoal: Goal1\ntools: {}\npolicies: {context: {}}\nsuccess_criteria: []\nartifacts: []").unwrap();
         fs::write(agents_dir.join("agent2.yaml"), "name: Agent2\ngoal: Goal2\ntools: {}\npolicies: {context: {}}\nsuccess_criteria: []\nartifacts: []").unwrap();
 
-        let config = Arc::new(Config::default());
+        let codex_home = temp_dir.path().to_path_buf();
+        let config = Arc::new(Config::load_for_testing(&codex_home).unwrap());
         let provider = ModelProviderInfo {
             name: "Test Provider".to_string(),
             base_url: Some("https://api.openai.com/v1".to_string()),
@@ -902,7 +911,7 @@ artifacts:
             stream_idle_timeout_ms: Some(300_000),
             requires_openai_auth: false,
         };
-        let conversation_id = ConversationId(Uuid::new_v4());
+        let conversation_id = ConversationId::new();
         let otel_manager = OtelEventManager::new(
             conversation_id,
             "test-model",
@@ -1375,7 +1384,7 @@ async fn test_filter_codex_mcp_tools() {
         stream_idle_timeout_ms: Some(300_000),
         requires_openai_auth: false,
     };
-    let conversation_id = ConversationId(Uuid::new_v4());
+    let conversation_id = ConversationId::new();
     let otel_manager = OtelEventManager::new(
         conversation_id,
         "test-model",
@@ -1425,7 +1434,7 @@ async fn test_build_codex_mcp_tools_description() {
         stream_idle_timeout_ms: Some(300_000),
         requires_openai_auth: false,
     };
-    let conversation_id = ConversationId(Uuid::new_v4());
+    let conversation_id = ConversationId::new();
     let otel_manager = OtelEventManager::new(
         conversation_id,
         "test-model",
