@@ -94,6 +94,43 @@ Composerで以下のように指示可能：
 - イテレータ優先
 - `clone()`回避
 
+#### 🔧 Rustのビルドとインストール（重要）
+
+Rustコードを変更した後は、必ず以下の手順でクリーンビルドとグローバルインストールを実行してください：
+
+```powershell
+# ステップ1: codex-rsディレクトリに移動
+cd codex-rs
+
+# ステップ2: クリーンビルド（全キャッシュをクリア）
+cargo clean
+
+# ステップ3: リリースビルド（最適化あり）
+cargo build --release -p codex-cli
+
+# ステップ4: グローバルインストール
+cargo install --path cli --force
+
+# ステップ5: インストール確認
+codex --version
+# 期待される出力: codex-cli 0.47.0-alpha.1
+```
+
+**注意事項**:
+- ⚠️ Rustコード変更時は必ずこの手順を実行
+- ⚠️ `cargo build` だけでは不十分（グローバルインストール必須）
+- ⚠️ `--force` フラグで既存のインストールを上書き
+- ⚠️ ビルド時間: 開発ビルド3-5分、リリースビルド10-15分
+
+**トラブルシューティング**:
+```powershell
+# エラーが出た場合：クリーンビルドスクリプトを使用
+.\clean-build-install.ps1
+
+# または、緊急修復スクリプト
+.\emergency-repair.ps1
+```
+
 ### C# Unity
 - Update内GC Allocation禁止
 - オブジェクトプーリング使用
