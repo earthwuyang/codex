@@ -325,7 +325,7 @@ fn create_test_sync_tool() -> ToolSpec {
     })
 }
 
-fn create_grep_files_tool() -> ToolSpec {
+pub(crate) fn create_grep_files_tool() -> ToolSpec {
     let mut properties = BTreeMap::new();
     properties.insert(
         "pattern".to_string(),
@@ -375,7 +375,7 @@ fn create_grep_files_tool() -> ToolSpec {
     })
 }
 
-fn create_read_file_tool() -> ToolSpec {
+pub(crate) fn create_read_file_tool() -> ToolSpec {
     let mut properties = BTreeMap::new();
     properties.insert(
         "file_path".to_string(),
@@ -473,7 +473,7 @@ fn create_read_file_tool() -> ToolSpec {
     })
 }
 
-fn create_list_dir_tool() -> ToolSpec {
+pub(crate) fn create_list_dir_tool() -> ToolSpec {
     let mut properties = BTreeMap::new();
     properties.insert(
         "dir_path".to_string(),

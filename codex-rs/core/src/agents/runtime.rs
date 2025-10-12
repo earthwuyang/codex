@@ -549,8 +549,21 @@ Only output the JSON, no explanation."#;
         // 1. システムプロンプト構築（シンプル版）
         let system_prompt = format!("You are a {} agent. {}", agent_def.name, agent_def.goal);
 
-        // 2. ユーザー入力を構築
-        let user_message = format!("Task: {goal}\n\nPlease proceed with the execution.");
+        // 2. ユーザー入力を構築（タスクとinputsを含む）
+        let inputs_text = if inputs.is_empty() {
+            String::new()
+        } else {
+            let mut text = String::from("\n\nProvided inputs:\n");
+            for (key, value) in &inputs {
+                text.push_str(&format!("- {}: {}\n", key, value));
+            }
+            text
+        };
+
+        let user_message = format!(
+            "Task: {}{}\n\nPlease analyze the task and provide a detailed response.",
+            goal, inputs_text
+        );
 
         // 3. ModelClient作成
         let client = ModelClient::new(
@@ -572,10 +585,12 @@ Only output the JSON, no explanation."#;
             }],
         }];
 
-        // 5. Prompt構築（ツールは現時点では空、将来的にツール権限から生成）
+        // 5. Prompt構築（エージェント権限からツールを生成）
+        let tools = self.build_tools_for_agent(agent_def);
+
         let prompt = Prompt {
             input: input_items,
-            tools: vec![], // TODO: agent_def.toolsからツール仕様を生成
+            tools,
             parallel_tool_calls: false,
             base_instructions_override: None, // Responses API検証を回避するためNoneに設定
             output_schema: None,
@@ -700,6 +715,57 @@ Only output the JSON, no explanation."#;
     /// 軽量版フォールバックが必要かチェック
     pub fn should_use_lightweight(&self, threshold: f64) -> bool {
         self.budgeter.should_fallback_lightweight(threshold)
+    }
+
+    /// エージェント権限に基づいてツール仕様を構築
+    fn build_tools_for_agent(
+        &self,
+        agent_def: &AgentDefinition,
+    ) -> Vec<crate::client_common::tools::ToolSpec> {
+        use crate::tools::spec::create_grep_files_tool;
+        use crate::tools::spec::create_list_dir_tool;
+        use crate::tools::spec::create_read_file_tool;
+
+        let mut tools = Vec::new();
+
+        debug!(
+            "Building tools for agent '{}': {:?}",
+            agent_def.name, agent_def.tools.mcp
+        );
+
+        for tool_name in &agent_def.tools.mcp {
+            match tool_name.as_str() {
+                "read_file" => {
+                    tools.push(create_read_file_tool());
+                    debug!("Added read_file tool for agent '{}'", agent_def.name);
+                }
+                "grep" | "grep_files" => {
+                    tools.push(create_grep_files_tool());
+                    debug!("Added grep_files tool for agent '{}'", agent_def.name);
+                }
+                "list_dir" => {
+                    tools.push(create_list_dir_tool());
+                    debug!("Added list_dir tool for agent '{}'", agent_def.name);
+                }
+                "codebase_search" => {
+                    use crate::tools::spec::create_codebase_search_tool;
+                    tools.push(create_codebase_search_tool());
+                    debug!("Added codebase_search tool for agent '{}'", agent_def.name);
+                }
+                }
+                _ => {
+                    debug!("Unknown tool in agent definition: {}", tool_name);
+                }
+            }
+        }
+
+        info!(
+            "Agent '{}' configured with {} tools",
+            agent_def.name,
+            tools.len()
+        );
+
+        tools
     }
 }
 
