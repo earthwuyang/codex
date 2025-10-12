@@ -21,12 +21,52 @@ default_mode = "read-only"
 policy = "on-request"
 
 # ==================== MCP サーバー ====================
-# Codex 自身を MCP サーバーとして使用
+# Codex 自身を MCP サーバーとして使用（サブエージェント用）
 [mcp_servers.codex-agent]
 args = ["mcp-server"]
 command = "codex"
 env.CODEX_CONFIG_PATH = "~/.codex/config.toml"
 env.RUST_LOG = "info"
+
+# Playwright - ブラウザ自動化・スクレイピング
+[mcp_servers.playwright]
+args = ["-y", "@playwright/mcp@latest"]
+command = "npx"
+
+# MarkItDown - Markdown 変換・ドキュメント処理
+[mcp_servers.markitdown]
+args = ["markitdown-mcp"]
+command = "uvx"
+
+# arXiv - 学術論文検索・ダウンロード
+[mcp_servers.arxiv-mcp-server]
+args = ["arxiv-mcp-server"]
+command = "uvx"
+
+# Context7 - Upstash コンテキスト管理
+[mcp_servers.context7]
+args = ["-y", "@upstash/context7-mcp"]
+command = "npx"
+
+# YouTube - 動画情報取得・トランスクリプト
+[mcp_servers.youtube]
+args = ["@anaisbetts/mcp-youtube"]
+command = "npx"
+
+# Gemini CLI - Google Gemini API 統合
+[mcp_servers.gemini-cli]
+args = ["mcp-gemini-cli", "--allow-npx"]
+command = "npx"
+
+# Codex MCP - 外部からの Codex 呼び出し用
+[mcp_servers.codex]
+args = ["mcp"]
+command = "codex"
+
+# Chrome DevTools - Chrome ブラウザ開発者ツール連携
+[mcp_servers.chrome-devtools]
+args = ["chrome-devtools-mcp@latest"]
+command = "npx"
 
 # ==================== サブエージェント ====================
 [subagents]
