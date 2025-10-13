@@ -1,9 +1,11 @@
+mod alias_loader;
 mod budgeter;
 mod loader;
 mod permission_checker;
 mod runtime;
 mod types;
 
+pub use alias_loader::AgentAliases;
 pub use budgeter::TokenBudgeter;
 pub use loader::AgentLoader;
 pub use permission_checker::PermissionChecker;

@@ -108,6 +108,18 @@ enum Subcommand {
     /// [EXPERIMENTAL] Conduct deep research on a topic.
     Research(ResearchCommand),
 
+    /// [EXPERIMENTAL] Ask a sub-agent with @mention support (e.g., "codex ask '@code-reviewer review this'")
+    Ask(AskCommand),
+
+    /// [EXPERIMENTAL] Quick review with code-reviewer agent
+    Review(ReviewCommand),
+
+    /// [EXPERIMENTAL] Quick audit with sec-audit agent
+    Audit(AuditCommand),
+
+    /// [EXPERIMENTAL] Quick test generation with test-gen agent
+    Test(TestCommand),
+
     /// Internal: run the responses API proxy.
     #[clap(hide = true)]
     ResponsesApiProxy(ResponsesApiProxyArgs),
@@ -252,6 +264,94 @@ struct ResearchCommand {
     gemini: bool,
 
     /// Output file for the report
+    #[arg(short, long, value_name = "FILE")]
+    out: Option<PathBuf>,
+}
+
+#[derive(Debug, Parser)]
+struct AskCommand {
+    #[clap(skip)]
+    config_overrides: CliConfigOverrides,
+
+    /// Prompt with optional @mention (e.g., "@code-reviewer review this" or just "research topic")
+    #[arg(value_name = "PROMPT")]
+    prompt: String,
+
+    /// Scope path (files or directories)
+    #[arg(long, value_name = "PATH")]
+    scope: Option<PathBuf>,
+
+    /// Token budget
+    #[arg(long, value_name = "TOKENS")]
+    budget: Option<usize>,
+
+    /// Output file for the result
+    #[arg(short, long, value_name = "FILE")]
+    out: Option<PathBuf>,
+}
+
+#[derive(Debug, Parser)]
+struct ReviewCommand {
+    #[clap(skip)]
+    config_overrides: CliConfigOverrides,
+
+    /// Task description or files to review
+    #[arg(value_name = "TASK")]
+    task: String,
+
+    /// Scope path (files or directories)
+    #[arg(long, value_name = "PATH")]
+    scope: Option<PathBuf>,
+
+    /// Token budget
+    #[arg(long, value_name = "TOKENS")]
+    budget: Option<usize>,
+
+    /// Output file for the result
+    #[arg(short, long, value_name = "FILE")]
+    out: Option<PathBuf>,
+}
+
+#[derive(Debug, Parser)]
+struct AuditCommand {
+    #[clap(skip)]
+    config_overrides: CliConfigOverrides,
+
+    /// Security audit task description
+    #[arg(value_name = "TASK", default_value = "Audit dependencies for CVEs")]
+    task: String,
+
+    /// Scope path (files or directories)
+    #[arg(long, value_name = "PATH")]
+    scope: Option<PathBuf>,
+
+    /// Token budget
+    #[arg(long, value_name = "TOKENS")]
+    budget: Option<usize>,
+
+    /// Output file for the result
+    #[arg(short, long, value_name = "FILE")]
+    out: Option<PathBuf>,
+}
+
+#[derive(Debug, Parser)]
+struct TestCommand {
+    #[clap(skip)]
+    config_overrides: CliConfigOverrides,
+
+    /// Test generation task description
+    #[arg(value_name = "TASK")]
+    task: String,
+
+    /// Scope path (files or directories)
+    #[arg(long, value_name = "PATH")]
+    scope: Option<PathBuf>,
+
+    /// Token budget
+    #[arg(long, value_name = "TOKENS")]
+    budget: Option<usize>,
+
+    /// Output file for the result
     #[arg(short, long, value_name = "FILE")]
     out: Option<PathBuf>,
 }
@@ -547,6 +647,62 @@ async fn cli_main(codex_linux_sandbox_exe: Option<PathBuf>) -> anyhow::Result<()
                 research_cmd.lightweight_fallback,
                 research_cmd.out,
                 research_cmd.gemini,
+            )
+            .await?;
+        }
+        Some(Subcommand::Ask(mut ask_cmd)) => {
+            prepend_config_flags(&mut ask_cmd.config_overrides, root_config_overrides.clone());
+            codex_cli::ask_cmd::run_ask_command(
+                ask_cmd.config_overrides,
+                ask_cmd.prompt,
+                ask_cmd.scope,
+                ask_cmd.budget,
+                ask_cmd.out,
+            )
+            .await?;
+        }
+        Some(Subcommand::Review(mut review_cmd)) => {
+            prepend_config_flags(
+                &mut review_cmd.config_overrides,
+                root_config_overrides.clone(),
+            );
+            codex_cli::ask_cmd::run_shortcut_command(
+                review_cmd.config_overrides,
+                "review",
+                review_cmd.task,
+                review_cmd.scope,
+                review_cmd.budget,
+                review_cmd.out,
+            )
+            .await?;
+        }
+        Some(Subcommand::Audit(mut audit_cmd)) => {
+            prepend_config_flags(
+                &mut audit_cmd.config_overrides,
+                root_config_overrides.clone(),
+            );
+            codex_cli::ask_cmd::run_shortcut_command(
+                audit_cmd.config_overrides,
+                "audit",
+                audit_cmd.task,
+                audit_cmd.scope,
+                audit_cmd.budget,
+                audit_cmd.out,
+            )
+            .await?;
+        }
+        Some(Subcommand::Test(mut test_cmd)) => {
+            prepend_config_flags(
+                &mut test_cmd.config_overrides,
+                root_config_overrides.clone(),
+            );
+            codex_cli::ask_cmd::run_shortcut_command(
+                test_cmd.config_overrides,
+                "test",
+                test_cmd.task,
+                test_cmd.scope,
+                test_cmd.budget,
+                test_cmd.out,
             )
             .await?;
         }
