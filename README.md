@@ -147,6 +147,26 @@ cargo build --release -p codex-cli
 npm install -g ./codex-cli
 ```
 
+#### Building on macOS Apple Silicon
+
+**Important**: If you're building on **Apple Silicon (ARM64) Macs**, you need to modify the build configuration:
+
+**Issue**: The default configuration in `codex-rs/.cargo/config.toml` forces `target-cpu=x86-64` globally, causing build errors on ARM64 Macs:
+```
+error: 'x86-64' is not a recognized processor for this target (ignoring processor)
+```
+
+**Fix Required**: Before building, edit `codex-rs/.cargo/config.toml` and **remove or comment out** the `[build]` section:
+
+```toml
+# Remove or comment out these lines:
+# [build]
+# # Use generic x86-64 instruction set to avoid ILLEGAL_INSTRUCTION errors
+# rustflags = ["-C", "target-cpu=x86-64"]
+```
+
+The per-target configurations (like `[target.x86_64-apple-darwin]`) should remain unchanged. This allows Apple Silicon Macs to use default ARM64 settings while Intel Macs continue to use x86-64.
+
 ---
 
 ## 🎮 Usage
