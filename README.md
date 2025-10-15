@@ -149,14 +149,16 @@ npm install -g ./codex-cli
 
 #### Building on macOS Apple Silicon
 
-**Important**: If you're building on **Apple Silicon (ARM64) Macs**, you need to modify the build configuration:
+**Important**: If you're building on **Apple Silicon (ARM64) Macs**, follow these additional steps:
 
 **Issue**: The default configuration in `codex-rs/.cargo/config.toml` forces `target-cpu=x86-64` globally, causing build errors on ARM64 Macs:
 ```
 error: 'x86-64' is not a recognized processor for this target (ignoring processor)
 ```
 
-**Fix Required**: Before building, edit `codex-rs/.cargo/config.toml` and **remove or comment out** the `[build]` section:
+**Complete Build Steps for Apple Silicon:**
+
+1. **Edit the config file**: Remove or comment out the `[build]` section in `codex-rs/.cargo/config.toml`:
 
 ```toml
 # Remove or comment out these lines:
@@ -165,7 +167,35 @@ error: 'x86-64' is not a recognized processor for this target (ignoring processo
 # rustflags = ["-C", "target-cpu=x86-64"]
 ```
 
-The per-target configurations (like `[target.x86_64-apple-darwin]`) should remain unchanged. This allows Apple Silicon Macs to use default ARM64 settings while Intel Macs continue to use x86-64.
+2. **Build the project**:
+
+```bash
+cd codex/codex-rs
+cargo build --release -p codex-cli
+```
+
+3. **Copy binary to npm vendor directory**:
+
+```bash
+cd ..
+mkdir -p codex-cli/vendor/aarch64-apple-darwin/codex
+cp codex-rs/target/release/codex codex-cli/vendor/aarch64-apple-darwin/codex/codex
+chmod +x codex-cli/vendor/aarch64-apple-darwin/codex/codex
+```
+
+4. **Install globally**:
+
+```bash
+npm install -g ./codex-cli
+```
+
+5. **Verify installation**:
+
+```bash
+codex --version
+```
+
+**Note**: Intel Macs (x86_64) can skip step 1 and follow the standard build process. The per-target configurations (like `[target.x86_64-apple-darwin]`) should remain unchanged.
 
 ---
 
