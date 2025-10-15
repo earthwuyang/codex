@@ -12,6 +12,8 @@ use codex_protocol::protocol::SessionSource;
 
 use codex_core::AuthManager;
 use codex_core::ConversationManager;
+use codex_core::agents::AgentRuntime;
+use codex_core::async_subagent_integration::AsyncSubAgentIntegration;
 use codex_core::config::Config;
 use codex_core::default_client::USER_AGENT_SUFFIX;
 use codex_core::default_client::get_codex_user_agent;
@@ -42,6 +44,8 @@ pub(crate) struct MessageProcessor {
     codex_linux_sandbox_exe: Option<PathBuf>,
     conversation_manager: Arc<ConversationManager>,
     running_requests_id_to_codex_uuid: Arc<Mutex<HashMap<RequestId, ConversationId>>>,
+    agent_runtime: Option<Arc<AgentRuntime>>,
+    async_integration: Option<Arc<AsyncSubAgentIntegration>>,
 }
 
 impl MessageProcessor {
@@ -51,17 +55,26 @@ impl MessageProcessor {
         outgoing: OutgoingMessageSender,
         codex_linux_sandbox_exe: Option<PathBuf>,
         config: Arc<Config>,
+        agent_runtime: Option<Arc<AgentRuntime>>,
     ) -> Self {
         let outgoing = Arc::new(outgoing);
         let auth_manager = AuthManager::shared(config.codex_home.clone(), false);
         let conversation_manager =
             Arc::new(ConversationManager::new(auth_manager, SessionSource::Mcp));
+
+        // Create AsyncSubAgentIntegration if runtime is available
+        let async_integration = agent_runtime
+            .as_ref()
+            .map(|runtime| Arc::new(AsyncSubAgentIntegration::new(Arc::clone(runtime))));
+
         Self {
             outgoing,
             initialized: false,
             codex_linux_sandbox_exe,
             conversation_manager,
             running_requests_id_to_codex_uuid: Arc::new(Mutex::new(HashMap::new())),
+            agent_runtime,
+            async_integration,
         }
     }
 
@@ -664,9 +677,14 @@ impl MessageProcessor {
         id: RequestId,
         arguments: Option<serde_json::Value>,
     ) {
-        let result =
-            crate::supervisor_tool_handler::handle_supervisor_tool_call(id.clone(), arguments)
-                .await;
+        tracing::debug!("Dispatching supervisor tool call (request_id: {:?})", id);
+        let result = crate::supervisor_tool_handler::handle_supervisor_tool_call(
+            id.clone(),
+            arguments,
+            &self.agent_runtime,
+        )
+        .await;
+        tracing::debug!("Supervisor tool call completed (request_id: {:?})", id);
         self.send_response::<mcp_types::CallToolRequest>(id, result)
             .await;
     }
@@ -686,17 +704,32 @@ impl MessageProcessor {
     }
 
     async fn handle_tool_call_subagent(&self, id: RequestId, arguments: Option<serde_json::Value>) {
+        tracing::debug!("Dispatching subagent tool call (request_id: {:?})", id);
         let result = match arguments {
-            Some(args) => crate::subagent_tool_handler::handle_subagent_tool_call(args).await,
-            None => Err(anyhow::anyhow!("No arguments provided")),
+            Some(args) => {
+                crate::subagent_tool_handler::handle_subagent_tool_call(
+                    args,
+                    &self.async_integration,
+                )
+                .await
+            }
+            None => {
+                tracing::error!("Subagent tool called without arguments");
+                Err(anyhow::anyhow!("No arguments provided"))
+            }
         };
 
         match result {
             Ok(call_result) => {
+                tracing::debug!(
+                    "Subagent tool call completed successfully (request_id: {:?})",
+                    id
+                );
                 self.send_response::<mcp_types::CallToolRequest>(id, call_result)
                     .await;
             }
             Err(e) => {
+                tracing::error!("Subagent tool call failed (request_id: {:?}): {}", id, e);
                 let error_result = CallToolResult {
                     content: vec![ContentBlock::TextContent(TextContent {
                         r#type: "text".to_string(),

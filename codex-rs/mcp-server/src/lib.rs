@@ -4,10 +4,16 @@
 use std::io::ErrorKind;
 use std::io::Result as IoResult;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use codex_common::CliConfigOverrides;
+use codex_core::AuthManager;
+use codex_core::agents::AgentRuntime;
 use codex_core::config::Config;
 use codex_core::config::ConfigOverrides;
+use codex_core::terminal;
+use codex_otel::otel_event_manager::OtelEventManager;
+use codex_protocol::ConversationId;
 
 use mcp_types::JSONRPCMessage;
 use tokio::io::AsyncBufReadExt;
@@ -109,6 +115,41 @@ pub async fn run_main(
         .map_err(|e| {
             std::io::Error::new(ErrorKind::InvalidData, format!("error loading config: {e}"))
         })?;
+    let config = Arc::new(config);
+
+    // Initialize AgentRuntime for parallel subagent execution
+    let workspace_dir = config.cwd.clone();
+    let auth_manager = AuthManager::shared(config.codex_home.clone(), true);
+    let auth_snapshot = auth_manager.auth();
+    let conversation_id = ConversationId::default();
+
+    let otel_manager = OtelEventManager::new(
+        conversation_id,
+        config.model.as_str(),
+        config.model_family.slug.as_str(),
+        auth_snapshot
+            .as_ref()
+            .and_then(|auth| auth.get_account_id()),
+        auth_snapshot.as_ref().map(|auth| auth.mode),
+        config.otel.log_user_prompt,
+        terminal::user_agent(),
+    );
+
+    let runtime_budget = config
+        .model_context_window
+        .unwrap_or(200_000)
+        .min(usize::MAX as u64) as usize;
+
+    let runtime = AgentRuntime::new(
+        workspace_dir,
+        runtime_budget,
+        Arc::clone(&config),
+        Some(Arc::new(auth_manager)),
+        otel_manager,
+        config.model_provider.clone(),
+        conversation_id,
+    );
+    let agent_runtime = Arc::new(runtime);
 
     // Task: process incoming messages.
     let processor_handle = tokio::spawn({
@@ -116,7 +157,8 @@ pub async fn run_main(
         let mut processor = MessageProcessor::new(
             outgoing_message_sender,
             codex_linux_sandbox_exe,
-            std::sync::Arc::new(config),
+            Arc::clone(&config),
+            Some(agent_runtime),
         );
         async move {
             while let Some(msg) = incoming_rx.recv().await {

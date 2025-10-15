@@ -195,7 +195,6 @@ npm install -g ./codex-cli
 codex --version
 ```
 
-**Note**: Intel Macs (x86_64) can skip step 1 and follow the standard build process. The per-target configurations (like `[target.x86_64-apple-darwin]`) should remain unchanged.
 
 ---
 
